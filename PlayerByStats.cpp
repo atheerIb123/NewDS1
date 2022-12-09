@@ -2,27 +2,26 @@
 
 PlayerByStats::PlayerByStats()
 {
-	playerId = 0;
-	teamId = nullptr;
-	gamesPlayed = 0;
-	goals = 0;
-	cards = 0;
-	goalKeeper = 0;
-	gamesPlayedWithTeam = nullptr;
+    playerId = 0;
+    teamId = nullptr;
+    gamesPlayed = 0;
+    goals = -1;
+    cards = 0;
+    goalKeeper = 0;
+    gamesPlayedWithTeam = nullptr;
 }
 
-PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) 
+PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper)
 {
-	playerId = playerId;
-	this->teamId = std::move(teamId);
-	gamesPlayed = gamesPlayed;
-	goals = goals;
-	cards = cards;
-	goalKeeper = goalKeeper;
-	gamesPlayedWithTeam = nullptr;
-	closestId = nullptr;	
+    this->playerId = playerId;
+    this->teamId = std::move(teamId);
+    this->gamesPlayed = gamesPlayed;
+    this->goals = goals;
+    this->cards = cards;
+    this->goalKeeper = goalKeeper;
+    this->gamesPlayedWithTeam = nullptr;
+    this->closestId = nullptr;
 }
-
 
 void PlayerByStats::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved)
 {

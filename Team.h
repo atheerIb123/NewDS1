@@ -21,7 +21,7 @@ private:
 public:
 	Team() {}
 	Team(int teamId, int points);
-	~Team();
+	~Team() = default;
 	Team(const Team& other) = default;
 	Team& operator=(const Team& other) = default;
 

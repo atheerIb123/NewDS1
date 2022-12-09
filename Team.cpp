@@ -13,10 +13,6 @@ Team::Team(int teamId, int points) : points(points)
     this->totalPlayers = 0;
 }
 
-Team::~Team()
-{
-}
-
 bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
 {
     if (!teamTreeByStats.insert(newPlayerSt) || !teamTreeById.insert(newPlayerId))

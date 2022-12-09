@@ -3,10 +3,6 @@
 
 #include <iostream>
 #include <memory>
-#include "AVLTree.h"
-#include "PlayerByStats.h"
-
-using namespace std;
 
 class PlayerById
 {

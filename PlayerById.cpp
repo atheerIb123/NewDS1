@@ -3,12 +3,12 @@
 PlayerById::PlayerById()
 {
 	playerId = 0;
-	this->teamId = nullptr;
+	teamId = nullptr;
 	gamesPlayed = 0;
 	goals = 0;
 	cards = 0;
 	goalKeeper = 0;
-	this->gamesPlayedWithTeam = nullptr;
+	gamesPlayedWithTeam = nullptr;
 }
 
 PlayerById::PlayerById(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
