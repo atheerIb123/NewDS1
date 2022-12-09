@@ -303,6 +303,10 @@ StatusType world_cup_t::remove_player(int playerId)
 	PlayerById temp(playerId, 0, 0, 0, 0, false);
 	Node<PlayerById>* tempPlayer = playersById.find(playersById.getRoot(), temp);
 
+    if(playerId == 110)
+    {
+        std::cout << "Fuck" << std::endl;
+    }
 	if (tempPlayer == nullptr)
 	{
 		return StatusType::FAILURE;
