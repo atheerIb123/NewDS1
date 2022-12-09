@@ -15,7 +15,6 @@ public:
 
 	void updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved);
 	int getTeamId() const;
-	//int* getTeamIdPtr() const { return this->teamId.get(); };
 	int getPlayerId() const;
 	void setTeamId(int newId);
 	int getGamesPlayed() const;

@@ -27,9 +27,9 @@ private:
 	AVLTree<Team> activeTeams;
 	AVLTree<Team> nonEmptyTeams;
 
-	int topScorer[2];//Index[0] = playerId, Index[1] = totalGoals that playerId scored
+	int topScorer[3];//Index[0] = playerId, Index[1] = totalGoals that playerId scored
 	int totalTeams;
-
+    //PlayerByStats topScorer;
 	Node<Team>* findTeam(int teamId, bool emptyFlag);
 	void updateTeamId(Node<PlayerById>* root, int newTeamId);
 	void findClosest(Node<PlayerByStats>* player);

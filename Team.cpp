@@ -6,7 +6,8 @@ Team::Team(int teamId, int points) : points(points)
     this->goalKeepers[0] = 0;
     this->goalKeepers[1] = 0;
     this->topScorer[0] = 0;
-    this->topScorer[1] = 0;
+    this->topScorer[1] = -1;
+    this->topScorer[2] = 0;
     this->totalCards = 0;
     this->totalGamesPlayed = std::make_shared<int>(0);
     this->totalGoals = 0;
@@ -37,15 +38,24 @@ bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
     {
         if (topScorer[1] == newPlayerSt->getGoalsCount())
         {
-            if (topScorer[0] < newPlayerSt->getPlayerId())
+            if(topScorer[2] == newPlayerSt->getCardsCount())
+            {
+                if (topScorer[0] < newPlayerSt->getPlayerId())
+                {
+                    topScorer[0] = newPlayerSt->getPlayerId();
+                }
+            }
+            else if(topScorer[2] > newPlayerSt->getCardsCount())
             {
                 topScorer[0] = newPlayerSt->getPlayerId();
+                topScorer[2] = newPlayerSt->getCardsCount();
             }
         }
         else if (topScorer[1] < newPlayerSt->getGoalsCount())
         {
             topScorer[0] = newPlayerSt->getPlayerId();
             topScorer[1] = newPlayerSt->getGoalsCount();
+            topScorer[2] = newPlayerSt->getCardsCount();
         }
     }
 
@@ -103,6 +113,7 @@ bool Team::removePlayer(int playerId)
         {
             topScorer[0] = top->getPlayerId();
             topScorer[1] = top->getGoalsCount();
+            topScorer[2] = top->getCardsCount();
         }
     }
 
@@ -131,20 +142,29 @@ void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAd
 
     this->totalCards += cardsToAdd;
     this->totalGoals += goalsToAdd;
-    
+
     if (topScorer[1] <= tempSt.getGoalsCount())
     {
         if (topScorer[1] == tempSt.getGoalsCount())
         {
-            if (topScorer[0] < tempSt.getPlayerId())
+            if(topScorer[2] == tempSt.getCardsCount())
+            {
+                if (topScorer[0] < tempSt.getPlayerId())
+                {
+                    topScorer[0] = tempSt.getPlayerId();
+                }
+            }
+            else if(topScorer[2] > tempSt.getCardsCount())
             {
                 topScorer[0] = tempSt.getPlayerId();
+                topScorer[2] = tempSt.getCardsCount();
             }
         }
-        else if(topScorer[1] < tempSt.getGoalsCount())
+        else if (topScorer[1] < tempSt.getGoalsCount())
         {
             topScorer[0] = tempSt.getPlayerId();
             topScorer[1] = tempSt.getGoalsCount();
+            topScorer[2] = tempSt.getCardsCount();
         }
     }
 
@@ -196,20 +216,31 @@ void Team::mergeTeams(Team& other)
 
     this->totalPlayers = teamTreeById.getNodesNum();
     this->addPoints(other.getTeamPoints());
-    
+    this->goalKeepers[0] += other.goalKeepers[0];
+    this->goalKeepers[1] += other.goalKeepers[1];
+
     if (this->topScorer[1] <= other.getTopScorerGoalsAmount())
     {
         if (topScorer[1] == other.getTopScorerGoalsAmount())
         {
-            if (topScorer[0] < other.getTopScorer())
+            if(topScorer[2] == other.topScorer[2])
+            {
+                if (topScorer[0] < other.getTopScorer())
+                {
+                    topScorer[0] = other.getTopScorer();
+                }
+            }
+            else if(topScorer[2] > other.topScorer[2])
             {
                 topScorer[0] = other.getTopScorer();
+                topScorer[2] = other.topScorer[2];
             }
         }
         else
         {
             topScorer[0] = other.getTopScorer();
             topScorer[1] = other.getTopScorerGoalsAmount();
+            topScorer[2] = other.topScorer[2];
         }
     }
 

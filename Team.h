@@ -16,7 +16,7 @@ private:
 	int totalGoals;
 	int totalCards;
 	int totalPlayers;
-	int topScorer[2];
+	int topScorer[3];
 	std::shared_ptr<int> totalGamesPlayed;
 public:
 	Team() {}
