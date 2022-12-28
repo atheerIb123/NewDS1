@@ -11,10 +11,10 @@ PlayerByStats::PlayerByStats()
     gamesPlayedWithTeam = nullptr;
 }
 
-PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper)
+PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int>& teamId, int gamesPlayed, int goals, int cards, bool goalKeeper)
 {
     this->playerId = playerId;
-    this->teamId = std::move(teamId);
+    this->teamId = teamId;
     this->gamesPlayed = gamesPlayed;
     this->goals = goals;
     this->cards = cards;
@@ -65,7 +65,7 @@ int PlayerByStats::getCardsCount() const
 	return this->cards;
 }
 
-void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
+void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int>& games)
 {
 	gamesPlayedWithTeam = games;
 }
@@ -75,13 +75,18 @@ void PlayerByStats::setClosest(int playerId)
 	*this->closestId = playerId;
 }
 
-void PlayerByStats::setClosestPtr(std::shared_ptr<int> ptr)
+void PlayerByStats::setClosestPtr(std::shared_ptr<int>& ptr)
 {
 	this->closestId = ptr;
 }
 
 int PlayerByStats::getClosest() const
 {
+    if(this->closestId.get() == nullptr)
+    {
+        return -1;
+    }
+
 	return *this->closestId;
 }
 

@@ -1,8 +1,12 @@
 #include "Team.h"
 
+Team::Team()
+{
+    this->teamId = std::make_shared<int>(-1);
+}
 Team::Team(int teamId, int points) : points(points)
 {
-    this->teamId = teamId;
+    this->teamId = std::make_shared<int>(teamId);
     this->goalKeepers[0] = 0;
     this->goalKeepers[1] = 0;
     this->topScorer[0] = 0;
@@ -14,48 +18,54 @@ Team::Team(int teamId, int points) : points(points)
     this->totalPlayers = 0;
 }
 
-bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
+bool Team::insertPlayer(int playerId, int gamesPlayed, int goals, int cards, bool goalKeeper)
 {
-    if (!teamTreeByStats.insert(newPlayerSt) || !teamTreeById.insert(newPlayerId))
+    PlayerById p1(playerId, this->teamId, gamesPlayed, goals, cards, goalKeeper);
+    PlayerByStats p2(playerId, this->teamId, gamesPlayed, goals, cards, goalKeeper);
+    p1.setGamesPlayedWithTeam(this->totalGamesPlayed);
+    p2.setGamesPlayedWithTeam(this->totalGamesPlayed);
+
+    teamTreeById.insert(&p1, false);
+    teamTreeByStats.insert(&p2, false);
+    /*if (!teamTreeByStats.insert(&p2) || !teamTreeById.insert(&p1))
     {
         return false;
-    }
-    
-    if (newPlayerId->isGoalKeeper() == true)
+    }*/
+
+    if (p1.isGoalKeeper() == true)
     {
         this->goalKeepers[0] = 1;
         this->goalKeepers[1]++;
     }
 
     this->totalPlayers++;
-    this->totalCards += newPlayerId->getCardsCount();
-    this->totalGoals += newPlayerId->getGoalsCount();
-    
-    newPlayerSt->setGamesPlayedWithTeam(this->totalGamesPlayed);
-    newPlayerId->setGamesPlayedWithTeam(this->totalGamesPlayed);
+    this->totalCards += p1.getCardsCount();
+    this->totalGoals += goals;
 
-    if (topScorer[1] <= newPlayerSt->getGoalsCount())
+
+
+    if (topScorer[1] <= p2.getGoalsCount())
     {
-        if (topScorer[1] == newPlayerSt->getGoalsCount())
+        if (topScorer[1] == p2.getGoalsCount())
         {
-            if(topScorer[2] == newPlayerSt->getCardsCount())
+            if(topScorer[2] == p2.getCardsCount())
             {
-                if (topScorer[0] < newPlayerSt->getPlayerId())
+                if (topScorer[0] < p2.getPlayerId())
                 {
-                    topScorer[0] = newPlayerSt->getPlayerId();
+                    topScorer[0] = p2.getPlayerId();
                 }
             }
-            else if(topScorer[2] > newPlayerSt->getCardsCount())
+            else if(topScorer[2] > p2.getCardsCount())
             {
-                topScorer[0] = newPlayerSt->getPlayerId();
-                topScorer[2] = newPlayerSt->getCardsCount();
+                topScorer[0] = p2.getPlayerId();
+                topScorer[2] = p2.getCardsCount();
             }
         }
-        else if (topScorer[1] < newPlayerSt->getGoalsCount())
+        else if (topScorer[1] < p2.getGoalsCount())
         {
-            topScorer[0] = newPlayerSt->getPlayerId();
-            topScorer[1] = newPlayerSt->getGoalsCount();
-            topScorer[2] = newPlayerSt->getCardsCount();
+            topScorer[0] = p2.getPlayerId();
+            topScorer[1] = p2.getGoalsCount();
+            topScorer[2] = p2.getCardsCount();
         }
     }
 
@@ -64,10 +74,11 @@ bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
 
 bool Team::removePlayer(int playerId)
 {
-    PlayerById tempPlayerId(playerId, nullptr, 0, 0, 0, false);
+    std::shared_ptr<int> x = std::make_shared<int>(0);
+    PlayerById tempPlayerId(playerId, x, 0, 0, 0, false);
 
     Node<PlayerById>* tempId = teamTreeById.find(teamTreeById.getRoot(), tempPlayerId);
-    PlayerByStats tempPlayerSt(playerId, nullptr, tempId->data->getGamesPlayed(), tempId->data->getGoalsCount(), tempId->data->getCardsCount(), tempId->data->isGoalKeeper());
+    PlayerByStats tempPlayerSt(playerId, x, tempId->data->getGamesPlayed(), tempId->data->getGoalsCount(), tempId->data->getCardsCount(), tempId->data->isGoalKeeper());
     Node<PlayerByStats>* tempSt = teamTreeByStats.find(teamTreeByStats.getRoot(), tempPlayerSt);
 
     if (!tempSt || !tempId)
@@ -78,33 +89,28 @@ bool Team::removePlayer(int playerId)
     int goals = tempId->data->getGoalsCount(), cards = tempId->data->getCardsCount();
     bool gk = tempId->data->isGoalKeeper();
 
-    Node<PlayerByStats>* toRemoveSt = teamTreeByStats.remove(tempSt->data);
-    Node<PlayerById>* toRemoveId = teamTreeById.remove(tempId->data);
+    teamTreeByStats.remove(tempSt->data, false);
+    teamTreeById.remove(tempId->data, false);
 
-    if (this->totalPlayers == 1 && (toRemoveId != nullptr || toRemoveSt != nullptr))
-    {
-        return false;
-    }
 
     this->totalPlayers--;
 
-    if (toRemoveId != nullptr)
-    {
-        this->totalCards -= cards;
-        this->totalGoals -= goals;
 
-        if (gk == true)
+    this->totalCards -= cards;
+    this->totalGoals -= goals;
+
+    if (gk == true)
+    {
+        if (this->goalKeepers[1] == 1)
         {
-            if (this->goalKeepers[1] == 1)
-            {
-                this->goalKeepers[0] = 0;
-            }
-            if (this->goalKeepers[1] >= 1)
-            {
-                this->goalKeepers[1]--;
-            }
+            this->goalKeepers[0] = 0;
+        }
+        if (this->goalKeepers[1] >= 1)
+        {
+            this->goalKeepers[1]--;
         }
     }
+
 
     if (topScorer[0] == playerId)
     {
@@ -122,20 +128,21 @@ bool Team::removePlayer(int playerId)
 
 void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAdd, int goalsToAdd, int cardsToAdd)
 {
-    PlayerById tempPlayer(playerId, 0, 0, 0, 0, false);
+    std::shared_ptr<int> x = std::make_shared<int>(0);
+    PlayerById tempPlayer(playerId, x, 0, 0, 0, false);
     Node<PlayerById>* currentPlayer = teamTreeById.find(teamTreeById.getRoot(), tempPlayer);
 
     PlayerById tempId(*currentPlayer->data);
-    teamTreeById.remove(currentPlayer->data);
+    teamTreeById.remove(currentPlayer->data, false);
     tempId.updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
-    teamTreeById.insert(&tempId);
+    teamTreeById.insert(&tempId, false);
 
     Node<PlayerByStats>* currentPlayerByStats = teamTreeByStats.find(teamTreeByStats.getRoot(), p);
-    
+
     PlayerByStats tempSt(*currentPlayerByStats->data);
-    teamTreeByStats.remove(currentPlayerByStats->data);
+    teamTreeByStats.remove(currentPlayerByStats->data, false);
     tempSt.updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
-    teamTreeByStats.insert(&tempSt);
+    teamTreeByStats.insert(&tempSt, false);
 
     teamTreeById.find(teamTreeById.getRoot(), tempId)->data->setGamesPlayedWithTeam(this->totalGamesPlayed);
     teamTreeByStats.find(teamTreeByStats.getRoot(), tempSt)->data->setGamesPlayedWithTeam(this->totalGamesPlayed);
@@ -263,9 +270,10 @@ void Team::setGamesPlayed()
 
 Node<PlayerByStats>* Team::findPlayerById(int playerId)
 {
-    PlayerById tempPlayer(playerId, 0, 0, 0, 0, 0);
+    std::shared_ptr<int> x = std::make_shared<int>(0);
+    PlayerById tempPlayer(playerId, x, 0, 0, 0, 0);
     Node<PlayerById>* currentPlayer = teamTreeById.find(teamTreeById.getRoot(), tempPlayer);
-    PlayerByStats tempStats(currentPlayer->data->getPlayerId(), nullptr, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
+    PlayerByStats tempStats(currentPlayer->data->getPlayerId(), x, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
  
     return teamTreeByStats.find(teamTreeByStats.getRoot(), tempStats);
 }
@@ -303,12 +311,17 @@ int Team::getPlayersCount() const
 
 int Team::getID() const
 {
-    return this->teamId;
+    return *this->teamId;
 }
 
 void Team::setNewId(int id)
 {
-    this->teamId = id;
+    *this->teamId = id;
+    if(this->teamTreeById.getRoot() != nullptr)
+    {
+        this->teamTreeById.getRoot()->data->setTeamId(id);
+        this->teamTreeByStats.getRoot()->data->setTeamId(id);
+    }
 }
 
 void Team::getPlayersDetails(PlayerByStats* const out)
@@ -327,7 +340,7 @@ bool Team::hasGoalKeeper() const
 
 bool Team::operator<(const Team& other) const
 {
-    if (this->teamId < other.teamId)
+    if (*this->teamId < *other.teamId)
     {
         return true;
     }
@@ -336,7 +349,7 @@ bool Team::operator<(const Team& other) const
 
 bool Team::operator>(const Team& other) const
 {
-    if (this->teamId > other.teamId)
+    if (*this->teamId > *other.teamId)
     {
         return true;
     }
@@ -345,10 +358,15 @@ bool Team::operator>(const Team& other) const
 
 bool Team::operator==(const Team& other) const
 {
-    if (this->teamId == other.teamId)
+    if (*this->teamId == *other.teamId)
     {
         return true;
     }
 
     return false;
+}
+
+std::shared_ptr<int>& Team::teamIdPtr()
+{
+    return this->teamId;
 }

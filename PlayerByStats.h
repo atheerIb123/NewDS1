@@ -8,7 +8,7 @@ class PlayerByStats
 {
 public:
 	PlayerByStats();
-	PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper);
+	PlayerByStats(int playerId, std::shared_ptr<int>& teamId, int gamesPlayed, int goals, int cards, bool goalKeeper);
 	virtual ~PlayerByStats() = default;
 	PlayerByStats(const PlayerByStats& other) = default;
 	PlayerByStats& operator=(const PlayerByStats& other) = default;
@@ -20,9 +20,9 @@ public:
 	int getGamesPlayed() const;
 	int getGoalsCount() const;
 	int getCardsCount() const;
-	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
+	void setGamesPlayedWithTeam(std::shared_ptr<int>& games);
 	void setClosest(int playerId);
-	void setClosestPtr(std::shared_ptr<int> ptr);
+	void setClosestPtr(std::shared_ptr<int>& ptr);
 	int getClosest() const;
 	bool isGk() const;
 	bool operator<(const PlayerByStats& other) const;

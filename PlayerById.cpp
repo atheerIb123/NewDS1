@@ -11,8 +11,8 @@ PlayerById::PlayerById()
 	gamesPlayedWithTeam = nullptr;
 }
 
-PlayerById::PlayerById(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
-	playerId(playerId), teamId(std::move(teamId)), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr)
+PlayerById::PlayerById(int playerId, std::shared_ptr<int>& teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
+	playerId(playerId), teamId(teamId), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr)
 {
 }
 
@@ -58,14 +58,13 @@ bool PlayerById::isGoalKeeper() const
 	return this->goalKeeper;
 }
 
-void PlayerById::setGamesPlayedWithTeam(std::shared_ptr<int> games)
+void PlayerById::setGamesPlayedWithTeam(std::shared_ptr<int>& games)
 {
 	this->gamesPlayedWithTeam = games;
 }
 
 bool PlayerById::operator<(const PlayerById& other) const
-{
-	if (this->playerId < other.playerId)
+{   if (this->playerId < other.playerId)
 	{
 		return true;
 	}

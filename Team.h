@@ -10,7 +10,7 @@ class Team
 private:	
 	AVLTree<PlayerByStats> teamTreeByStats;
 	AVLTree<PlayerById> teamTreeById;
-	int teamId;
+	std::shared_ptr<int> teamId;
 	int points;
 	int goalKeepers[2];
 	int totalGoals;
@@ -19,13 +19,13 @@ private:
 	int topScorer[3];
 	std::shared_ptr<int> totalGamesPlayed;
 public:
-	Team() {}
+	Team();
 	Team(int teamId, int points);
 	~Team() = default;
 	Team(const Team& other) = default;
 	Team& operator=(const Team& other) = default;
 
-	bool insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId);
+	bool insertPlayer(int playerId, int gamesPlayed, int goals, int cards, bool goalKeeper);
 	bool removePlayer(int playerId);
 	int getTeamPoints() const;
 	void addPoints(int points);
@@ -45,6 +45,7 @@ public:
 	void incrementGamesPlayed();
 	void setGamesPlayed();
 	Node<PlayerByStats>* findPlayerById(int playerId);
+    std::shared_ptr<int>& teamIdPtr();
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;

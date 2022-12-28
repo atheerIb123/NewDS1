@@ -8,7 +8,7 @@ class PlayerById
 {
 public:
 	PlayerById();
-	PlayerById(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper);
+	PlayerById(int playerId, std::shared_ptr<int>& teamId, int gamesPlayed, int goals, int cards, bool goalKeeper);
 	~PlayerById() = default;
 	PlayerById(const PlayerById& other) = default;
 	PlayerById& operator=(const PlayerById& other) = default;
@@ -20,7 +20,7 @@ public:
 	int getCardsCount() const;
 	int getGamesPlayed() const;
 	bool isGoalKeeper() const;
-	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
+	void setGamesPlayedWithTeam(std::shared_ptr<int>& games);
 	int getPlayerId() const
 	{
 		return this->playerId;

@@ -42,7 +42,9 @@ private:
 	int maxv(int val1, int val2) const;
 	static Node<T>* findMinNode(Node<T>* root);
 	Node<T>* insertNode(Node<T>* root, T& data, Node<T>* nodeOfList);
+    Node<T>* insertNodeListless(Node<T>* root, T& data);
 	Node<T>* removeNode(Node<T>*, T& data);
+    Node<T>* removeNodeListless(Node<T>* node, T& data);
 	Node<T>* copyNodes(Node<T>* node);
 	void mergeArrays(T* const arr1, int size1, T* const arr2, int size2, T* const newArr);
 	Node<T>* mergeTreesRecu(int left, int right, Node<T>* root, T* const newArr);
@@ -61,9 +63,9 @@ public:
 	Node<T>* balanceTree(Node<T>* root); //a helper method for rotations
 	int getBalance(Node<T>* node);
 	int getNodesNum() const;
-	Node<T>* insert(T* data);
+	Node<T>* insert(T* data, bool list);
 	Node<T>* find(Node<T>* root, const T& data);
-	Node<T>* remove(T* data);
+	Node<T>* remove(T* data, bool list);
 	Node<T>* getRoot() const;
 	void inOrder(Node<T>* root, T* const output, int& index) const;
 	void inOrderMinToMax(Node<T>* node, T* min, T* max, T* const output, int& index) const;
@@ -367,7 +369,7 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			this->root = newNode;
 			this->listOfNodes.head = newNode;
 		}
-		else if (nodeOfList->next == nullptr && data < *nodeOfList->data)
+		else if (nodeOfList->next == nullptr && nodeOfList->data != nullptr && data < *nodeOfList->data)
 		{
 			if (nodeOfList->previous != nullptr)
 			{
@@ -382,7 +384,7 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			nodeOfList->previous = newNode;
 			newNode->next = nodeOfList;
 		}
-		else if (nodeOfList->previous == nullptr && data > *nodeOfList->data)
+		else if (nodeOfList->previous == nullptr && nodeOfList->data != nullptr && data > *nodeOfList->data)
 		{
 			if (nodeOfList->next != nullptr)
 			{
@@ -397,18 +399,18 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			nodeOfList->next = newNode;
 			newNode->previous = nodeOfList;
 		}
-		else if (nodeOfList->previous == nullptr && data < *nodeOfList->data)
+		else if (nodeOfList->previous == nullptr && nodeOfList->data != nullptr && data < *nodeOfList->data)
 		{
 			newNode->next = nodeOfList;
 			nodeOfList->previous = newNode;
 			this->listOfNodes.head = newNode;
 		}
-		else if (nodeOfList->next == nullptr && data > *nodeOfList->data)
+		else if (nodeOfList->next == nullptr && nodeOfList->data != nullptr && data > *nodeOfList->data)
 		{
 			newNode->previous = nodeOfList;
 			nodeOfList->next = newNode;
 		}
-		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr && *nodeOfList->data < data) 
+		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr &&nodeOfList->data != nullptr && *nodeOfList->data < data)
 		{
 			Node<T>* temp = nodeOfList->next;
 			nodeOfList->next = newNode;
@@ -416,7 +418,7 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			newNode->previous = nodeOfList;
 			newNode->next->previous = newNode;
 		}
-		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr && *nodeOfList->data > data)
+		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr && nodeOfList->data != nullptr && *nodeOfList->data > data)
 		{
 			Node<T>* temp = nodeOfList->previous;
 			temp->next = newNode;
@@ -470,15 +472,47 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 	return root;
 }
 
-template<class T>
-inline Node<T>* AVLTree<T>::insert(T* data)
+template <class T>
+inline Node<T>* AVLTree<T>::insertNodeListless(Node<T>* node, T& data)
 {
-	if (find(this->root,* data))
+    if (node == nullptr) {
+        Node<T>* new_root = new Node<T>(data);
+        if (this->root == nullptr) {
+            this->root = new_root;
+        }
+        numOfNodes++;
+        return new_root;
+    }
+
+    if (node && (*(node->data) > data)) {
+        node->left = insertNodeListless(node->left, data);
+    }
+    else if (node && (*(node->data) < data)) {
+        node->right = insertNodeListless(node->right, data);
+    }
+    else {
+        return node;
+    }
+
+    node = balanceTree(node);
+    this->root = node;
+    return node;
+}
+
+template<class T>
+inline Node<T>* AVLTree<T>::insert(T* data, bool list)
+{
+	if (find(this->root, *data))
 	{
 		return nullptr;
 	}
 	
 	listOfNodes.currentRoot = this->root;
+
+    if(list == false)
+    {
+        return insertNodeListless(this->root, *data);
+    }
 
 	return insertNode(this->root, *data, listOfNodes.currentRoot);
 }
@@ -509,13 +543,63 @@ inline Node<T>* AVLTree<T>::find(Node<T>* node, const T& data)
 }
 
 template<class T>
-inline Node<T>* AVLTree<T>::remove(T* data)
+inline Node<T>* AVLTree<T>::removeNodeListless(Node<T> *node, T &data)
+{
+    if (node == nullptr) {
+        return node;
+    }
+
+    if (*(node->data) > data) {
+        node->left = removeNodeListless(node->left, data);
+    }
+
+    else if (*(node->data) < data) {
+        node->right = removeNodeListless(node->right, data);
+    }
+
+    else {
+        if ((node->left == nullptr) || (node->right == nullptr)) {
+            Node<T>* temp = node->left ? node->left : node->right;
+            if (temp == nullptr) {
+                temp = node;
+                node = nullptr;
+                this->root = node;
+            }
+            else {
+                *(node) = *(temp);
+            }
+            numOfNodes--;
+            delete temp;
+        }
+        else {
+            Node<T>* temp = findMinNode(node->right);
+            *(node->data) = *(temp->data);
+            node->right = removeNodeListless(node->right, *temp->data);
+        }
+    }
+
+    if (node == nullptr) {
+        return node;
+    }
+    node = balanceTree(node);
+    this->root = node;
+    return node;
+}
+
+
+template<class T>
+inline Node<T>* AVLTree<T>::remove(T* data, bool list)
 {
 	if (!find(this->root, *data))
 	{
 		return nullptr;
 	}
-	
+
+    if(list == false)
+    {
+        return removeNodeListless(this->root, *data);
+    }
+
 	listOfNodes.currentRoot = this->root;
 	Node<T>* temp = find(root, *data);
 	Node<T>* previous = temp->previous;
@@ -548,17 +632,18 @@ inline Node<T>* AVLTree<T>::remove(T* data)
 			nextNextData = *nextNext->data;
 	}
 	
-	if (nextk != nullptr)
+	if (nextk != nullptr && nextk->data != nullptr)
 	{
 		nextData = *(nextk->data);
 	}
 	
-	if (previous != nullptr)
+	if (previous != nullptr && previous->data != nullptr)
 	{
 		prevData = *(previous->data);
 	}
 
 	Node<T>* head = removeNode(root, *data);
+
 
 	Node<T>* newNext = find(root, nextData);
 	Node<T>* newPrev = find(root, prevData);
